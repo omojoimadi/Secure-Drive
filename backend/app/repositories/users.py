@@ -277,7 +277,6 @@ async def mark_verified(
     *,
     conn: asyncpg.Connection,
     user_id: str | uuid.UUID,
-    expected_version: int,
 ) -> Record:
     """
     Set verified = TRUE only when the token version matches.
@@ -296,9 +295,8 @@ async def mark_verified(
         RETURNING *
         """,
         id,
-        expected_version,
     )
-    return _assert_found(row, f"{id}@v{expected_version}")
+    return _assert_found(row, f"{id}")
 
 
 # ---------------------------------------------------------------------------

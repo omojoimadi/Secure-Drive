@@ -55,7 +55,6 @@ _DEFAULT_TTL_SECONDS = 12 * 60 * 60  # 12 hours
 
 class _TokenPayload(TypedDict):
     sub: str  # user UUID
-    ver: int  # user record version
     exp: int  # expiry (epoch seconds)
     typ: str  # token type
 
@@ -122,7 +121,6 @@ def _decode_and_verify_signature(secret: bytes, token: str) -> _TokenPayload:
         raw = json.loads(_b64url_decode(payload_b64))
         return _TokenPayload(
             sub=str(raw["sub"]),
-            ver=int(raw["ver"]),
             exp=int(raw["exp"]),
             typ=str(raw["typ"]),
         )
@@ -150,14 +148,6 @@ def _check_user(payload: _TokenPayload, user_id: str) -> None:
         raise TokenSubjectError("Token subject does not match the provided user ID.")
 
 
-def _check_version(payload: _TokenPayload, record_version: int) -> None:
-    if payload["ver"] != record_version:
-        raise TokenVersionError(
-            f"Token record version {payload['ver']} does not match "
-            f"current version {record_version}. Token has been invalidated."
-        )
-
-
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -175,7 +165,6 @@ def create_token(
     now = int(time.time())
     payload = _TokenPayload(
         sub=str(user_id),
-        ver=record_version,
         exp=now + ttl_seconds,
         typ=_TOKEN_TYPE,
     )
@@ -185,7 +174,6 @@ def create_token(
 def validate_token(
     signed_token: str,
     user_id: str,
-    ver: int,
 ) -> VerificationResult:
     """Validate the token and return the decoded payload if valid, otherwise raise an error."""
     secret_key = os.getenv("JWT_SECRET_KEY", "")
@@ -195,10 +183,8 @@ def validate_token(
     _check_type(payload)
     _check_expiry(payload)
     _check_user(payload, user_id)
-    _check_version(payload, ver)
 
     return VerificationResult(
         user_id=payload["sub"],
         expires_at=payload["exp"],
-        record_version=payload["ver"],
     )

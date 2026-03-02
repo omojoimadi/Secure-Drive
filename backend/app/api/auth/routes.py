@@ -80,17 +80,15 @@ async def register(user_data: UserRegister, conn: asyncpg.Connection = Depends(d
 @router.get("/verify", status_code=status.HTTP_200_OK)
 async def verify_email(
     user_id: str,
-    ver: int,
     signed_token: str,
     conn: asyncpg.Connection = Depends(db),
 ):
     verification_result = validate_token(
-        signed_token=signed_token, user_id=user_id, ver=ver
+        signed_token=signed_token, user_id=user_id
     )
     await mark_verified(
         conn=conn,
         user_id=verification_result.user_id,
-        expected_version=verification_result.record_version,
     )
 
     return {"detail": "Email verified successfully."}

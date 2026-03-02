@@ -232,7 +232,7 @@ def send_email(
     sender_addr = _validate_address(config.SMTP_ADDRESS, "sender")
     recipient_addr = _validate_address(recipient, "recipient")
 
-    verify_url = f"{config.ENDPOINT}?user_id={user_id}&ver={ver}&signed_token={signed_token}"
+    verify_url = f"{config.ENDPOINT}?user_id={user_id}&signed_token={signed_token}"
 
     text_body = config.TEXT_BODY_TEMPLATE.replace(
         config.URL_PLACEHOLDER, verify_url
