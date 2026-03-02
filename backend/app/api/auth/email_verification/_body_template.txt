@@ -1,0 +1,19 @@
+Subject: Verify your Secure Drive email address
+
+Hi there,
+
+Thanks for signing up for Secure Drive! Please verify your email address to activate your account and get started.
+
+Click the link below to verify your email:
+
+BASE_URL_WITH_ROUTE_AND_TOKEN
+
+This link will expire in 24 hours. If you didn't create a Secure Drive account, you can safely ignore this email.
+
+If the link above doesn't work, copy and paste it into your browser's address bar.
+
+— The Secure Drive Team
+
+---
+You're receiving this email because an account was created with this email address on Secure Drive.
+If this wasn't you, no action is required.
