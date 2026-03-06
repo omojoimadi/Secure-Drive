@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/backend" # path to your requirements.txt
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "npm"
+    directory: "/frontend" # path to your package.json
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/" # path to docker-compose files
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/backend" # path to Dockerfiles
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/frontend" # path to Dockerfiles
+    schedule:
+      interval: "weekly"
