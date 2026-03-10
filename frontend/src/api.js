@@ -14,11 +14,18 @@ async function handleResponse(response) {
   if (response.status === 401) {
     clearToken();
     window.location.href = "/login";
-    throw new Error("Session expired. Please log in again.");
+    throw new Error("Your session has expired. Please log in again.");
   }
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err.detail || `Request failed (${response.status})`);
+    const friendly = {
+      403: "You don't have permission to do that.",
+      404: "The requested resource was not found.",
+      500: "Something went wrong on our end. Please try again.",
+      502: "The server is temporarily unavailable. Please try again.",
+      503: "The service is currently unavailable. Please try again.",
+    };
+    throw new Error(friendly[response.status] || err.detail || `An unexpected error occurred (${response.status}).`);
   }
   return response.json();
 }
