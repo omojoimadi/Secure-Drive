@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from "../assets/logo.svg";
-import { Upload, Folder, FileText, Settings, Search, MoreVertical, Home, Clock, Star, Trash2, Users, HardDrive, Download, Share2 } from 'lucide-react';
+import { Upload, Folder, FileText, Settings, Search, MoreVertical, Home, Clock, Star, Trash2, Users, HardDrive, Download, Share2, AlertTriangle} from 'lucide-react';
 import { api } from '../api';
 import { getToken } from "../tokenStore";
 
@@ -10,6 +10,7 @@ export default function Dashboard() {
     const [user, setUser] = useState(null);
     const [activeMenu, setActiveMenu] = useState(null);
     const [files, setFiles] = useState([]);
+    const [filesError, setFilesError] = useState(false);
     const [loading, setLoading] = useState(true);
     const [storageStats, setStorageStats] = useState({ total_files: 0, total_mb: 0 });
     const [uploading, setUploading] = useState(false);
@@ -74,6 +75,7 @@ export default function Dashboard() {
             setFiles(formattedFiles);
         } catch (error) {
             console.error('Failed to load files:', error);
+            setFilesError(true);
         } finally {
             setLoading(false);
         }
@@ -377,15 +379,23 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {loading ? (
-                        <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
-                            Loading files...
-                        </div>
-                    ) : files.length === 0 ? (
-                        <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
-                            No files yet. Upload your first file!
-                        </div>
-                    ) : (
+                        {loading ? (
+                            <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+                                Loading files...
+                            </div>
+                        ) : filesError ? (
+                            <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+                                <AlertTriangle size={32} color="#f59e0b" style={{ marginBottom: "8px" }} />
+                                <p style={{ fontSize: "0.875rem" }}>Something went wrong loading your files. Please try again.</p>
+                                <button onClick={() => { setFilesError(false); loadFiles(); }} style={{ marginTop: "8px", padding: "8px 16px", borderRadius: "8px", border: "1px solid #e0e0e0", cursor: "pointer", backgroundColor: "white" }}>
+                                    Retry
+                                </button>
+                            </div>
+                        ) : files.length === 0 ? (
+                            <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+                                No files yet. Upload your first file!
+                            </div>
+                        ) : (
                         <>
                             <div style={{ marginBottom: "32px" }}>
                                 <h2 style={{ fontSize: "0.75rem", fontWeight: 600, color: "#999", margin: "0 0 16px 0", letterSpacing: "0.5px" }}>
@@ -456,8 +466,7 @@ export default function Dashboard() {
                                         <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#999" }}>TYPE</span>
                                         <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#999" }}>MODIFIED</span>
                                         <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#999" }}>SIZE</span>
-                                    </div>
-
+                                    </div>y
                                     {files.map((file, index) => (
                                         <div
                                             key={file.id}
