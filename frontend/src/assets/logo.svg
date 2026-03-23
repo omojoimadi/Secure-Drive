@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="60 90 392 390" role="img" aria-labelledby="title">
   <title id="title">Secure Drive icon</title>
 
   <defs>
@@ -24,11 +24,11 @@
   <path fill="url(#cloud)" transform="translate(0 -20)" d="M208 250c2-19 18-34 38-34 15 0 28 8 35 21 4-2 9-3 14-3 17 0 31 13 31 30 0 18-14 32-32 32h-80c-17 0-30-13-30-29 0-13 10-24 24-17z"/>
 
   <g transform="translate(145 161) scale(0.40)">
-    <path fill="none" stroke="#0B1220" stroke-width="25" stroke-linecap="round" stroke-linejoin="round" d="M228 269
-         v-18
-         c0-26.5 21.5-48 48-48
-         s48 21.5 48 48
-         v18"/>
+      <path fill="none" stroke="#0B1220" stroke-width="25" stroke-linecap="round" stroke-linejoin="round" d="M228 269
+          v-18
+          c0-26.5 21.5-48 48-48
+          s48 21.5 48 48
+          v18"/>
   </g>
 
   <rect x="226" y="268" width="60" height="54" rx="12" fill="#0B1220"/>
