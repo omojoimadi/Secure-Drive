@@ -318,7 +318,7 @@ export default function Dashboard() {
                     </div>
 
                         {/* Account Circle + Dropdown */}
-                        <div style={{ position: "relative" }}>
+                        <div style={{ position: "relative" }} data-account-menu>
                             <div
                                 onClick={() => setShowAccountMenu(!showAccountMenu)}
                                 style={{
@@ -335,7 +335,6 @@ export default function Dashboard() {
                                     cursor: "pointer"
                                 }}
                             >
-                                <div style={{ position: "relative" }} data-account-menu></div>
                                 {user?.name?.charAt(0).toUpperCase() || "U"}
                             </div>
 
