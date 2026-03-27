@@ -178,3 +178,74 @@ async def update_storage_quota(
 
     row = assert_found(row, UserNotFoundError)
     return User.model_validate(dict(row))
+
+
+async def mark_verified(
+    *,
+    conn: Connection,
+    user_id: UUID,
+    verification_version: int,
+) -> User:
+    """
+    Set ``verified = TRUE`` only when the stored ``verification_version``
+    matches the value embedded in the token.
+
+    The version check is the replay-protection mechanism: if
+    ``increment_verification_version`` has been called since the token was
+    issued (e.g. the user requested a second link), the UPDATE matches zero
+    rows and ``UserNotFoundError`` is raised.
+
+    Raises:
+        UserNotFoundError: Token version is stale, user is inactive, or the
+            UUID does not exist.
+    """
+    row = await conn.fetchrow(
+        """
+        UPDATE users
+        SET verified = TRUE
+        WHERE user_id             = $1
+          AND is_active           = TRUE
+          AND verification_version = $2
+        RETURNING *
+        """,
+        user_id,
+        verification_version,
+    )
+    row = assert_found(row, UserNotFoundError)
+    return User.model_validate(dict(row))
+
+
+async def mark_unverified(
+    *,
+    conn: Connection,
+    user_id: UUID,
+    verification_version: int,
+) -> User:
+    """
+    Set ``verified = TRUE`` only when the stored ``verification_version``
+    matches the value embedded in the token.
+
+    The version check is the replay-protection mechanism: if
+    ``increment_verification_version`` has been called since the token was
+    issued (e.g. the user requested a second link), the UPDATE matches zero
+    rows and ``UserNotFoundError`` is raised.
+
+    Raises:
+        UserNotFoundError: Token version is stale, user is inactive, or the
+            UUID does not exist.
+    """
+    row = await conn.fetchrow(
+        """
+        UPDATE users
+        SET verified = FALSE,
+            verification_version = 0
+        WHERE user_id             = $1
+          AND is_active           = TRUE
+          AND verification_version = $2
+        RETURNING *
+        """,
+        user_id,
+        verification_version,
+    )
+    row = assert_found(row, UserNotFoundError)
+    return User.model_validate(dict(row))
