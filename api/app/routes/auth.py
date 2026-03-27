@@ -7,6 +7,8 @@ from asyncpg import Connection
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 
+from api.app.services.tokens._password import decode_password_reset_token
+
 from ..database.token import (
     create_refresh_token,
     get_refresh_token_by_hash,
@@ -21,16 +23,19 @@ from ..database.user import (
     create_user,
     get_user_by_email,
     get_user_by_id,
+    increment_password_version,
     increment_verification_version,
     invalidate_access_tokens,
     mark_verified,
     record_login,
+    update_password,
 )
 from ..database.user.exceptions import (
     EmailAlreadyExistsError,
     UserCreateError,
     UserNotFoundError,
 )
+from ..models.reset_password import ResetPasswordRequest
 from ..models.token import RefreshTokenCreate, RefreshTokenRequest
 from ..models.types import Email
 from ..models.user import (
@@ -39,9 +44,10 @@ from ..models.user import (
     UserResponse,
 )
 from ..services.crypto import verify_password
-from ..services.mailer import send_verification_email
+from ..services.mailer import send_password_reset_email, send_verification_email
 from ..services.tokens import (
     create_access_token,
+    create_password_reset_token,
     create_verification_token,
     decode_access_token,
     decode_verification_token,
@@ -278,6 +284,64 @@ async def refresh(
     }
 
 
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+async def forgot_password(email: Email, conn: Connection = Depends(get_db)):
+    """
+    Attempt to send a password reset email to the given email, if exists. returns 200 regardless.
+    """
+    try:
+        user = await get_user_by_email(conn=conn, email=email)
+    except UserNotFoundError:
+        print("Email not found.")
+        return None
+
+    user = await increment_password_version(conn=conn, user_id=user.user_id)
+
+    try:
+        token = create_password_reset_token(
+            user_id=user.user_id, version=user.password_version
+        )
+        send_password_reset_email(
+            recipient=user.email,
+            signed_token=token.tok, # type: ignore
+        )
+    except Exception as exc:
+        # Password reset link was not sent — don't roll back, don't also warn the caller, just log
+        print(f"Failed to send password reset email: {exc}")
+
+
+@router.get("/reset-password/{signed_token}", status_code=status.HTTP_200_OK)
+async def validate_password_reset_token(
+    signed_token: str,
+    conn: Connection = Depends(get_db),
+):
+    token = decode_password_reset_token(signed_token=signed_token)  # also checks expiry
+    user = await get_user_by_id(conn=conn, user_id=token.sub)
+
+    if user.password_version != token.ver:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The used password reset token has been invalidated.",
+        )
+
+    return HTMLResponse(
+        content='<script>window.location.href="http://localhost:5173/reset-password"</script>'
+    )
+
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+async def reset_password(
+    request: ResetPasswordRequest,
+    conn: Connection = Depends(get_db),
+):
+    user = await get_user_by_email(conn=conn, email=request.email)
+    await update_password(conn=conn, user_id=user.user_id, password=request.new_password)
+
+    return HTMLResponse(
+        content='<script>window.location.href="http://localhost:5173/reset-password"</script>'
+    )
+
+
 @router.post("/logout", status_code=status.HTTP_200_OK)
 async def logout(
     token: str = Depends(get_token),
@@ -293,7 +357,7 @@ async def logout(
 
 
 @router.get("/me", response_model=UserResponse, status_code=status.HTTP_200_OK)
-async def get_current_user_info(
+async def me(
     conn: Connection = Depends(get_db), token=Depends(get_token)
 ):
     """

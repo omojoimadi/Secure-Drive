@@ -4,8 +4,9 @@ from uuid import UUID
 
 from asyncpg import CheckViolationError, Connection, UniqueViolationError
 
-from ...models.types import Email, SHA256Hex
+from ...models.types import Email
 from ...models.user import User
+from ...services.crypto import hash_password
 from .._common import assert_found
 from .exceptions import (
     EmailAlreadyExistsError,
@@ -79,7 +80,7 @@ async def update_password(
     *,
     conn: Connection,
     user_id: UUID,
-    password_hash: SHA256Hex,
+    password: str,
 ) -> User:
     """
     Replace the password hash and advance ``valid_since`` to the current UTC
@@ -96,7 +97,7 @@ async def update_password(
         WHERE user_id = $2
         RETURNING *
         """,
-        password_hash,
+        hash_password(password),
         user_id,
     )
     row = assert_found(row, UserNotFoundError)
