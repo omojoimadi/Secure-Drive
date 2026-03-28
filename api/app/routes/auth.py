@@ -7,8 +7,6 @@ from asyncpg import Connection
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse
 
-from api.app.services.tokens._password import decode_password_reset_token
-
 from ..database.token import (
     create_refresh_token,
     get_refresh_token_by_hash,
@@ -54,6 +52,7 @@ from ..services.tokens import (
     generate_refresh_token,
     hash_refresh_token,
 )
+from ..services.tokens._password import decode_password_reset_token
 from ._common import get_db, get_token
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -86,10 +85,11 @@ async def register(user_data: UserRegister, conn: Connection = Depends(get_db)):
         )
         send_verification_email(
             recipient=new_user.email,
-            signed_token=token.tok, # type: ignore
+            signed_token=token.tok,  # type: ignore
         )
     except Exception as exc:
         # Email verification link was not sent — don't roll back, just warn the caller
+        print(f"Failed to send verification email: {exc}")
         raise HTTPException(
             status_code=status.HTTP_201_CREATED,
             detail=f"Failed to send verification email: {exc}",
@@ -124,10 +124,11 @@ async def resend_verification(email: Email, conn: Connection = Depends(get_db)):
         )
         send_verification_email(
             recipient=user.email,
-            signed_token=token.tok, # type: ignore
+            signed_token=token.tok,  # type: ignore
         )
     except Exception as exc:
-        # Email verification link was not sent — don't roll back, just warn the caller
+        # Email verification link was not sent — just warn the caller
+        print(f"Failed to send verification email: {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to send verification email: {exc}",
@@ -303,7 +304,7 @@ async def forgot_password(email: Email, conn: Connection = Depends(get_db)):
         )
         send_password_reset_email(
             recipient=user.email,
-            signed_token=token.tok, # type: ignore
+            signed_token=token.tok,  # type: ignore
         )
     except Exception as exc:
         # Password reset link was not sent — don't roll back, don't also warn the caller, just log
@@ -335,7 +336,9 @@ async def reset_password(
     conn: Connection = Depends(get_db),
 ):
     user = await get_user_by_email(conn=conn, email=request.email)
-    await update_password(conn=conn, user_id=user.user_id, password=request.new_password)
+    await update_password(
+        conn=conn, user_id=user.user_id, password=request.new_password
+    )
 
     return HTMLResponse(
         content='<script>window.location.href="http://localhost:5173/reset-password"</script>'
@@ -357,9 +360,7 @@ async def logout(
 
 
 @router.get("/me", response_model=UserResponse, status_code=status.HTTP_200_OK)
-async def me(
-    conn: Connection = Depends(get_db), token=Depends(get_token)
-):
+async def me(conn: Connection = Depends(get_db), token=Depends(get_token)):
     """
     Get current authenticated user information.
     """

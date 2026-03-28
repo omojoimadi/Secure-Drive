@@ -180,18 +180,16 @@ def _send_smtp_message(
     sender_addr = _validate_address(config.SMTP_ADDRESS, "sender")
     recipient_addr = _validate_address(recipient, "recipient")
 
-    verify_url = f"{config.ENDPOINT}/{signed_token}"
+    url = f"{config.ENDPOINT}/{signed_token}"
 
-    text_body = config.TEXT_BODY_TEMPLATE.replace(
-        config.URL_PLACEHOLDER, reset_url
-    ).strip()
+    text_body = config.TEXT_BODY_TEMPLATE.replace(config.URL_PLACEHOLDER, url).strip()
     if not text_body:
         raise MailerError("Rendered text body is empty after URL substitution.")
 
     html_body: str | None = None
     if config.HTML_BODY_TEMPLATE:
         html_body = (
-            config.HTML_BODY_TEMPLATE.replace(config.URL_PLACEHOLDER, reset_url).strip()
+            config.HTML_BODY_TEMPLATE.replace(config.URL_PLACEHOLDER, url).strip()
             or None
         )
 
