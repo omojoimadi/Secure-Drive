@@ -27,6 +27,9 @@ updates:
       - "automated"
     commit-message:
       prefix: "chore(npm)"
+    ignore:
+      - dependency-name: "eslint"
+      - dependency-name: "@eslint/js"
     groups:
       npm-deps:
         patterns:
