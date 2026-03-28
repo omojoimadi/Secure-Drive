@@ -10,7 +10,6 @@ from email.mime.text import MIMEText
 from email.utils import formataddr, parseaddr
 from functools import lru_cache
 from pathlib import Path
-from urllib.parse import quote
 
 from .exceptions import (
     InvalidAddressError,
@@ -181,7 +180,7 @@ def _send_smtp_message(
     sender_addr = _validate_address(config.SMTP_ADDRESS, "sender")
     recipient_addr = _validate_address(recipient, "recipient")
 
-    reset_url = f"{config.ENDPOINT}/{quote(signed_token, safe='')}"
+    verify_url = f"{config.ENDPOINT}/{signed_token}"
 
     text_body = config.TEXT_BODY_TEMPLATE.replace(
         config.URL_PLACEHOLDER, reset_url

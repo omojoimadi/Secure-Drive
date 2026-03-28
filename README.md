@@ -1,6 +1,7 @@
 <center>
-   <img src="./frontend/public/secure_drive.svg" width="280" alt="Secure Drive Logo" />
+   <img src="./frontend/public/favicon.svg" width="280" alt="Secure Drive Logo" />
 </center>
+<br><br><br>
 
 # Secure Drive
 
