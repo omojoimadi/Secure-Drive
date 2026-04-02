@@ -93,14 +93,10 @@ export default function Dashboard() {
         }
     }
 
-    async function handleDeleteFile(fileId) {
-        try {
+        async function handleDeleteFile(fileId) {
         await api.deleteFile(fileId);
         await loadFiles();
         await loadStorageStats();
-        } catch {
-        alert('Failed to delete file. Please try again.');
-        }
     }
 
     function handleReportIssue() {
