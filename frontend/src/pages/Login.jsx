@@ -4,6 +4,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.svg";
 import { setToken } from "../tokenStore";
+import { useSearchParams } from "react-router-dom";
 
 function Login() {
     const navigate = useNavigate();
@@ -14,6 +15,8 @@ function Login() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [searchParams] = useSearchParams();
+    const justVerified = searchParams.get("verified") === "true";
 
     const handleChange = (e) => {
         setFormData({
@@ -107,6 +110,11 @@ function Login() {
             {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>
                     {error}
+                </Alert>
+            )}
+            {justVerified && (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                    Email verified successfully! You can now log in.
                 </Alert>
             )}
 
